@@ -63,7 +63,9 @@ int main(int argc, char** argv) {
     /* detect how many CPUs are available */
     cpu_set_t cpu_set;
     sched_getaffinity(0, sizeof(cpu_set), &cpu_set);
-    int cpu_num = CPU_COUNT(&cpu_set);
+    int ncpus = CPU_COUNT(&cpu_set);
+
+
 
     /* argument parsing */
     assert(argc == 9);
@@ -81,20 +83,35 @@ int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+    if (rank == 0) {
+        printf("%d cpus available\n", ncpus);
+    }
 
-    /* Calculate the range for each process */
+    // /* Calculate the range for each process */
+    // MPI_Barrier(MPI_COMM_WORLD);
+    // double calc_range_start = MPI_Wtime();
+
     long long unit = height / size;
     long long remain = height % size;
     long long start_row = unit * rank + (rank < remain ? rank : remain);
     long long num_rows = unit + (rank < remain ? 1 : 0);
 
+    // MPI_Barrier(MPI_COMM_WORLD);
+    // double calc_range_end = MPI_Wtime();
+    // if (rank == 0) {
+    //     printf("Time taken to calculate the range for each process: %f seconds\n", calc_range_end - calc_range_start);
+    // }
+
     /* allocate memory for image */
     image = (int*)malloc(num_rows * width * sizeof(int));
     assert(image);
 
-    
+    // /* Start timing */
+    // MPI_Barrier(MPI_COMM_WORLD);
+    // double calc_start = MPI_Wtime();
+
     /* mandelbrot set calculation */
-    #pragma omp parallel num_threads(cpu_num)
+    #pragma omp parallel num_threads(ncpus)
     {
         long long row;
         #pragma omp for schedule(dynamic) reduction(+:current_row)
@@ -164,7 +181,17 @@ int main(int argc, char** argv) {
         }
     }
 
-    
+    // /* End timing Mandelbrot set calculation */
+    // MPI_Barrier(MPI_COMM_WORLD);
+    // double calc_end = MPI_Wtime();
+    // if (rank == 0) {
+    //     printf("Time taken for Mandelbrot set calculation: %f seconds\n", calc_end - calc_start);
+    // }
+
+    // /* Start timing for gather results */
+    // MPI_Barrier(MPI_COMM_WORLD);
+    // double gather_start = MPI_Wtime();
+
     /* gather results to rank 0 */
     if (rank == 0) {
         int* full_image = (int*)malloc(total * sizeof(int));
@@ -181,6 +208,13 @@ int main(int argc, char** argv) {
     } else {
         MPI_Send(image, num_rows * width, MPI_INT, 0, 0, MPI_COMM_WORLD);
     }
+
+    ///* End timing for gather results */
+    // MPI_Barrier(MPI_COMM_WORLD);
+    // double gather_end = MPI_Wtime();
+    // if (rank == 0) {
+    //     printf("Time taken to gather results to rank 0: %f seconds\n", gather_end - gather_start);
+    // }
 
     MPI_Finalize();
     free(image);
