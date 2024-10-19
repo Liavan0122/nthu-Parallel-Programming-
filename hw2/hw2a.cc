@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <immintrin.h> // for AVX512
 #include <math.h>
+#include <sys/time.h>  // for time test
 
 // Global variables and mutex
 long long current_row = 0; // Global row index for dynamic allocation
@@ -173,9 +174,12 @@ int main(int argc, char** argv) {
     /* allocate memory for image */
     int* image = (int*)malloc(width * height * sizeof(int));
     assert(image);
+    
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
 
     /* create threads */
-    int num_threads = 96; // Use 96 threads
+    int num_threads = 48; // Use 96 threads
     pthread_t threads[num_threads];
     thread_data_t thread_data[num_threads];
 
@@ -197,7 +201,13 @@ int main(int argc, char** argv) {
     for (int i = 0; i < num_threads; ++i) {
         pthread_join(threads[i], NULL);
     }
+    // End timing
+    gettimeofday(&end, NULL);
 
+    // Calculate elapsed time
+    double elapsed_time = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1e6;
+    printf("Execution time: %f seconds\n", elapsed_time);
+    
     pthread_mutex_destroy(&mutex);
 
     /* draw and cleanup */
