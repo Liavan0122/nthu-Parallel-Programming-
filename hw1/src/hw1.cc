@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <mpi.h>
 #include <iostream>
-#include <iomanip>  // 加入這個頭文件
+#include <iomanip>  
 #include <boost/sort/spreadsort/spreadsort.hpp>
 
 void mergeData(float* localData, int localSize, float* neighborData, int neighborSize, float* tempBuffer, bool mergeFromMin) {
