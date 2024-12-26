@@ -1,0 +1,32 @@
+[
+    {
+        "block factor": 16,
+        "time": 244.51,
+        "achieved_occupancy": 0.945368,
+        "sm_efficiency": 99.86,
+        "shared_load_throughput": 953.65,
+        "shared_store_throughput": 79.470,
+        "gld_throughput": 119.21,
+        "gst_throughput": 39.735
+    },
+    {
+        "block factor": 32,
+        "time": 64.20,
+        "achieved_occupancy": 0.908732,
+        "sm_efficiency": 99.75,
+        "shared_load_throughput": 2762.9,
+        "shared_store_throughput": 115.12,
+        "gld_throughput": 172.68,
+        "gst_throughput": 57.559
+    },
+    {
+        "block factor": 64,
+        "time": 30.85,
+        "achieved_occupancy": 0.939752,
+        "sm_efficiency": 99.59,
+        "shared_load_throughput": 3136.3,
+        "shared_store_throughput": 130.68,
+        "gld_throughput": 196.02,
+        "gst_throughput": 65.340
+    }
+]

@@ -1,0 +1,64 @@
+Input調整: srun -N1 -n1 --gres=gpu:1 ./hw3-2-B64 /home/pp24/share/hw3-2/testcases/p29k1 ./output/timeB64_p29.out
+
+
+原始:
+
+void input(char *infile) {
+    FILE *file = fopen(infile, "rb");
+    fread(&n, sizeof(int), 1, file);
+    fread(&m, sizeof(int), 1, file);
+
+    n_original = n;
+
+    // 調整 n，使其對齊到 B 的倍數
+    n += B - ((n % B + B - 1) % B + 1);
+
+    // Allocate pinned memory for h_Dist
+    cudaMallocHost(&h_Dist, n * n * sizeof(int));
+
+    // Initialize h_Dist with INF and 0 for diagonal elements
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i < n_original && j < n_original) {
+                h_Dist[i * n + j] = (i == j) ? 0 : INF;
+            } else {
+                h_Dist[i * n + j] = INF;
+            }
+        }
+    }
+
+    // Read edges
+    int pair[3];
+    for (int i = 0; i < m; ++i) {
+        fread(pair, sizeof(int), 3, file);
+        int idx = pair[0]*n + pair[1];
+        h_Dist[idx] = pair[2];
+    }
+
+    fclose(file);
+}
+
+I/O Input Time: 4.57 -> 3.48 seconds
+
+----------------------------------------------------------------
+Input調整:
+
+原始:
+    // Write results to file
+    for (int i = 0; i < n_original; i++) {
+        for (int j = 0; j < n_original; j++) {
+            int dist_value = h_Dist[i * n + j];
+
+
+            // 檢查是否無法到達，若無法到達則輸出為 1073741823
+            if (dist_value >= INF) {
+                dist_value = 1073741823;
+            }
+            // printf("%d\t", dist_value);
+
+            fwrite(&dist_value, sizeof(int), 1, file);
+        }
+        // printf("\n");
+    }
+
+I/O output Time: 25.66 -> 6.55 seconds
